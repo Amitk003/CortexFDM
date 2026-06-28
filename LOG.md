@@ -44,6 +44,17 @@
 - docs/setup.md - step-by-step setup guide
 - docs/usage.md - how to run the system
 
+### Phase 2b: Cerebras Client (feat/cerebras-client branch)
+- Written controller/cerebras_client.py
+  - CerebrasClient class loads API key from .env or constructor param
+  - Loads system prompt from config/system_prompt.txt
+  - Loads tool schema from config/tool_schema.json
+  - diagnose(image_base64, telemetry) - sends multimodal payload to Cerebras API
+  - Constructs proper OpenAI-compatible messages array with text + image_url
+  - Returns structured dict with defect_type, action_required, optional params
+  - Error handling for missing API key, file not found, API failures
+- Tested module structure: system prompt (799 chars), tool schema, telemetry formatting all working
+
 ### Phase 2a: Mock Camera (feat/mock-camera branch)
 - Written controller/camera.py
   - MockCamera class with automatic image scanning
