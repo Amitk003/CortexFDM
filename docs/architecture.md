@@ -22,12 +22,12 @@ The controller is the main program. It does these things in a loop:
 4. Sends the image to the Cerebras API
 5. Gets back a diagnosis (what defect was found)
 6. Translates the diagnosis into G-code commands
-7. Sends the G-code to the mock printer over the virtual serial port
+7. Sends the G-code to the mock printer over the TCP connection
 8. Waits 3 seconds, then repeats
 
 ### Mock Printer
 A script that pretends to be a 3D printer. It:
-- Listens on a virtual serial port
+- Listens on a TCP socket (localhost:9999)
 - Parses incoming G-code commands
 - Keeps track of temperature, position, and speed
 - Replies with "ok" after each command
