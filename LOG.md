@@ -42,3 +42,14 @@
 - docs/architecture.md - system architecture overview
 - docs/setup.md - step-by-step setup guide
 - docs/usage.md - how to run the system
+
+### Phase 2a: Mock Camera (feat/mock-camera branch)
+- Written controller/camera.py
+  - MockCamera class with automatic image scanning
+  - get_next_frame() - reads, resizes (384x384), encodes to JPEG, returns base64 data URI
+  - raw=True returns dict with filename, base64, data_uri, dimensions, size_bytes
+  - Automatic cycling through sorted images (loops back after last)
+  - Supports .jpg, .jpeg, .png files
+- Updated config/settings.py: IMAGE_WIDTH/HEIGHT changed from 512 to 384 (token optimized)
+- Generated 4 test images in sample_images/ (placeholder graphics)
+- Tested: 6 reads from 4-image pool correctly cycles back to start
