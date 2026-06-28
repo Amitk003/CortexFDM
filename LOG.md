@@ -89,6 +89,17 @@
   - SafetyError raised for out-of-range values
 - Tested: all 4 scenarios, error cases, and safety clamps verified
 
+### Codebase Refactoring (2026-06-28)
+- controller/gcode_translator.py: Removed empty if...pass validation blocks (dead code)
+- config/settings.py: Removed unused CEREBRAS_STRICT_MODE (moved to tool schema)
+- controller/cerebras_client.py: Removed unused CEREBRAS_STRICT_MODE import
+- controller/serial_bridge.py: Removed unused import time
+- controller/ui.py: Removed unused imports (Console, Live, console = Console())
+- controller/camera.py: Removed raw parameter from get_next_frame() - simpler API
+- controller/main.py: Made sys.path.insert more robust with duplicate check
+- config/system_prompt.txt: Added telemetry context info for the AI
+- config/prompts/: Removed empty directory
+
 ### Phase 2a: Mock Camera (feat/mock-camera branch)
 - Written controller/camera.py
   - MockCamera class with automatic image scanning

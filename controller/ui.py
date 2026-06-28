@@ -1,13 +1,8 @@
 from datetime import datetime
-from rich.console import Console
 from rich.layout import Layout
 from rich.panel import Panel
-from rich.live import Live
 from rich.table import Table
 from rich.text import Text
-
-
-console = Console()
 
 
 def build_layout():

@@ -1,5 +1,4 @@
 import socket
-import time
 from config.settings import (
     MOCK_PRINTER_HOST,
     MOCK_PRINTER_PORT,

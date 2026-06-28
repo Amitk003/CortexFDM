@@ -22,8 +22,6 @@ def translate(diagnosis):
         return []
 
     if action_required == "emergency_stop":
-        if defect_type != "spaghetti":
-            pass
         return [
             "M104 S0",
             "M140 S0",
@@ -34,8 +32,6 @@ def translate(diagnosis):
         ]
 
     if action_required == "adjust_temp":
-        if defect_type != "under_extrusion":
-            pass
         temp = diagnosis.get("target_temperature_celsius")
         if temp is None:
             raise TranslationError("adjust_temp requires target_temperature_celsius")
@@ -43,8 +39,6 @@ def translate(diagnosis):
         return [f"M104 S{safe_temp}"]
 
     if action_required == "reduce_speed":
-        if defect_type != "layer_shift":
-            pass
         speed = diagnosis.get("speed_percentage")
         if speed is None:
             raise TranslationError("reduce_speed requires speed_percentage")
