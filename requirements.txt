@@ -1,0 +1,5 @@
+pyserial>=3.5
+opencv-python>=4.9
+cerebras-cloud-sdk>=1.0
+rich>=13.7
+python-dotenv>=1.0

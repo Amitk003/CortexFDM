@@ -1,0 +1,31 @@
+{
+  "type": "function",
+  "function": {
+    "name": "execute_remediation",
+    "description": "Adjusts physical printer parameters dynamically based on visual defect detection and geometric analysis.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "defect_type": {
+          "type": "string",
+          "enum": ["spaghetti", "layer_shift", "under_extrusion", "nominal"],
+          "description": "The exact classification of the visual anomaly."
+        },
+        "action_required": {
+          "type": "string",
+          "enum": ["emergency_stop", "adjust_temp", "reduce_speed", "none"],
+          "description": "The corresponding physical intervention required."
+        },
+        "target_temperature_celsius": {
+          "type": "integer",
+          "description": "If under_extrusion is detected, increase current temp by 5 to 10 degrees. Absolute maximum is 240."
+        },
+        "speed_percentage": {
+          "type": "integer",
+          "description": "If layer_shift is detected, reduce the kinematic speed to 70% to stabilize the motors."
+        }
+      },
+      "required": ["defect_type", "action_required"]
+    }
+  }
+}
