@@ -55,3 +55,16 @@
   - G91 / G1 Z10 -> position updated to Z:10.0
   - G28 X Y -> position reset to X:0.0 Y:0.0 Z:0.0
   - M114 -> "ok X:0.0 Y:0.0 Z:0.0"
+
+### Refactoring: Codebase review and fixes
+- README.md: Removed outdated com0com reference
+- DOCUMENTATION.md: Replaced "virtual serial port" with "TCP connection"
+- docs/architecture.md: Fixed mixed virtual serial port references
+- mock_printer/firmware.py: Major refactoring
+  - Converted global mutable dict to PrinterState class with attributes
+  - Separated GCodeParser into its own class
+  - Created MockPrinter class with start/stop/run lifecycle
+  - Added proper error handling for type conversions
+  - Used settings.py values instead of hardcoded temps
+  - Better graceful shutdown on disconnect
+  - All 9 test commands still pass after refactor

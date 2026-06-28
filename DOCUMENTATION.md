@@ -30,7 +30,7 @@ The controller is the brain. It:
 3. Sends it to the AI along with current printer telemetry
 4. Gets back the diagnosis in JSON
 5. Translates the JSON into G-code commands
-6. Sends the G-code to the mock printer over the virtual serial port
+6. Sends the G-code to the mock printer over the TCP connection
 
 This loop runs every 3 seconds.
 

@@ -5,8 +5,7 @@ CortexFDM is an autonomous closed-loop AI system that monitors and fixes FDM 3D 
 It uses a multimodal AI model (Gemma 4 31B) to visually inspect a 3D print, detect defects like under-extrusion or total failure, and automatically send corrective G-code commands to the printer.
 
 This is a PC-only setup. No physical printer hardware is needed. The system uses:
-- A mock printer script that simulates a real 3D printer firmware
-- A virtual serial port for communication
+- A mock printer script that simulates a real 3D printer firmware over TCP
 - Sample images as a mock camera feed
 - The Cerebras API for fast AI inference
 
@@ -23,11 +22,10 @@ CortexFDM/
 
 ## Quick Start
 
-1. Install com0com for virtual serial ports
-2. Install Python dependencies: `pip install -r requirements.txt`
-3. Place sample images in `sample_images/`
-4. Set your API key in `.env`
-5. Run mock printer: `python -m mock_printer.firmware`
-6. Run controller: `python -m controller.main`
+1. Install Python dependencies: `pip install -r requirements.txt`
+2. Place sample images in `sample_images/`
+3. Set your API key in `.env`
+4. Run mock printer: `python -m mock_printer.firmware`
+5. Run controller: `python -m controller.main`
 
 See `docs/setup.md` for detailed setup instructions.
