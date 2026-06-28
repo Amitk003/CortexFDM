@@ -44,6 +44,18 @@
 - docs/setup.md - step-by-step setup guide
 - docs/usage.md - how to run the system
 
+### Phase 4: Terminal UI (feat/terminal-ui branch)
+- Written controller/ui.py
+  - Dashboard class with Rich-based terminal layout
+  - Header panel with system title
+  - Left panel: current image name, frame number, defect type, action, loop count, timing
+  - Right panel: extruder temp, bed temp, X/Y/Z position, last G-code
+  - Bottom panel: scrolling event log (last 8 lines visible)
+  - Live display updates 4 times per second
+- Updated controller/main.py to use Dashboard instead of print statements
+  - Integrated Live context manager for real-time display
+  - All status updates go through dashboard.add_log() and dashboard.update_status()
+- Tested: UI renders correct panels with sample data
 ### Phase 3b: Closed-Loop Main Controller (feat/closed-loop branch)
 - Written controller/main.py
   - Full closed-loop orchestration: Camera -> Cerebras -> Translator -> Printer
