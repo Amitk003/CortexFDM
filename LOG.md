@@ -56,6 +56,38 @@
   - Integrated Live context manager for real-time display
   - All status updates go through dashboard.add_log() and dashboard.update_status()
 - Tested: UI renders correct panels with sample data
+### Phase 3b: Closed-Loop Main Controller (feat/closed-loop branch)
+- Written controller/main.py
+  - Full closed-loop orchestration: Camera -> Cerebras -> Translator -> Printer
+  - Initializes all components with proper error handling
+  - Loop: capture image, query telemetry, AI diagnosis, translate to G-code, send to printer
+  - Graceful shutdown on Ctrl+C
+  - All error cases handled with clear console messages
+- Verified: camera loads images, connects to mock printer, Cerebras client init reports missing key correctly
+- Ready to test with real API once .env is configured
+### Phase 2b: Cerebras Client (feat/cerebras-client branch)
+- Written controller/cerebras_client.py
+  - CerebrasClient class loads API key from .env or constructor param
+  - Loads system prompt from config/system_prompt.txt
+  - Loads tool schema from config/tool_schema.json
+  - diagnose(image_base64, telemetry) - sends multimodal payload to Cerebras API
+  - Constructs proper OpenAI-compatible messages array with text + image_url
+  - Returns structured dict with defect_type, action_required, optional params
+  - Error handling for missing API key, file not found, API failures
+- Tested module structure: system prompt (799 chars), tool schema, telemetry formatting all working
+### Phase 3a: G-code Translator + Safety (feat/gcode-translator branch)
+- Written controller/gcode_translator.py
+  - translate(diagnosis) - converts AI diagnosis dict to G-code command list
+  - Spaghetti (emergency_stop) -> M104 S0, M140 S0, G91, G1 Z10, G28 X Y, M84
+  - Under-extrusion (adjust_temp) -> M104 S{temp}
+  - Layer shift (reduce_speed) -> M220 S{speed}
+  - Nominal -> no commands
+  - Validates defect_type and action_required
+- Written controller/safety.py
+  - clamp_temperature() - enforces 150-250C range
+  - clamp_speed() - enforces 10-200% range
+  - SafetyError raised for out-of-range values
+- Tested: all 4 scenarios, error cases, and safety clamps verified
 
 ### Phase 2a: Mock Camera (feat/mock-camera branch)
 - Written controller/camera.py
