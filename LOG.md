@@ -42,3 +42,22 @@
 - docs/architecture.md - system architecture overview
 - docs/setup.md - step-by-step setup guide
 - docs/usage.md - how to run the system
+
+### Refactoring: Codebase review and fixes
+- README.md: Removed outdated com0com reference
+- DOCUMENTATION.md: Replaced "virtual serial port" with "TCP connection"
+- docs/architecture.md: Fixed mixed virtual serial port references
+- mock_printer/firmware.py: Major refactoring (on feat/mock-printer branch)
+  - Converted global mutable dict to PrinterState class with attributes
+  - Separated GCodeParser into its own class
+  - Created MockPrinter class with start/stop/run lifecycle
+  - Added proper error handling for type conversions
+
+### Phase 1b: Serial Bridge (feat/serial-bridge branch)
+- Written controller/serial_bridge.py - TCP client for mock printer
+  - SerialBridge class with connect/disconnect/context manager
+  - send_gcode() / send_multiple() - sends commands, reads responses
+  - query_temperature() - parses M105 response
+  - query_position() - parses M114 response
+  - Buffer-based response reader handles partial TCP reads
+- Tested successfully: all commands and parsing work correctly
