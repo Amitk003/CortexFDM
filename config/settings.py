@@ -1,10 +1,9 @@
 # Configuration constants for CortexFDM
 
-# Virtual Serial Port
-MOCK_PRINTER_PORT = "CNCB0"
-CONTROLLER_PORT = "CNCA0"
-BAUD_RATE = 115200
-SERIAL_TIMEOUT = 2.0
+# TCP Socket Settings (replaces virtual serial port)
+MOCK_PRINTER_HOST = "127.0.0.1"
+MOCK_PRINTER_PORT = 9999
+SOCKET_TIMEOUT = 5.0
 
 # Camera / Image Settings
 IMAGE_FOLDER = "sample_images"

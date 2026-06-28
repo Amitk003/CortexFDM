@@ -5,7 +5,7 @@
 The system has 3 main parts that talk to each other:
 
 ```
-[Controller]  <--- Virtual Serial Port --->  [Mock Printer]
+[Controller]  <--- TCP Socket (localhost:9999) --->  [Mock Printer]
      |
      | (sends images to AI)
      v
@@ -45,7 +45,7 @@ The AI service. It:
 2. Controller sends image + telemetry to Cerebras API
 3. Cerebras returns JSON tool call with diagnosis
 4. Controller parses JSON -> generates G-code
-5. Controller sends G-code over virtual serial port
+5. Controller sends G-code over TCP socket to mock printer
 6. Mock printer receives G-code -> updates internal state
 7. Mock printer replies "ok"
 8. Repeat from step 1

@@ -13,7 +13,7 @@ python -m mock_printer.firmware
 
 You will see output like:
 ```
-[MOCK PRINTER] Connected on CNCB0
+[MOCK PRINTER] Listening on 127.0.0.1:9999
 [MOCK PRINTER] Ready to receive G-code commands
 [MOCK PRINTER] Received: M104 S215
 [MOCK PRINTER] Set extruder temp to 215

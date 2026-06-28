@@ -9,7 +9,7 @@ CortexFDM is a system that watches a 3D printer while it prints, spots problems 
 The system has 4 main parts:
 
 ### 1. Mock Printer
-This is a pretend 3D printer that runs as a Python script. It listens for G-code commands over a virtual serial port. G-code is the language used to control 3D printers (like "set temperature to 200" or "move to position X10 Y20"). The mock printer keeps track of its temperature, position, and speed, and replies to every command just like a real printer would.
+This is a pretend 3D printer that runs as a Python script. It listens for G-code commands over a TCP connection on your local machine. G-code is the language used to control 3D printers (like "set temperature to 200" or "move to position X10 Y20"). The mock printer keeps track of its temperature, position, and speed, and replies to every command just like a real printer would.
 
 ### 2. Mock Camera
 Instead of a real camera, the system reads sample images from a folder. These images show different 3D printing states: a perfect print, under-extrusion (gaps in the layers), or spaghetti (total failure where the print has detached from the bed). The images are resized and compressed to be sent to the AI efficiently.

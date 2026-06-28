@@ -15,10 +15,11 @@
 - Packages installed: pyserial 3.5, opencv-python 4.13, cerebras-cloud-sdk 1.67, rich 15.0, python-dotenv 1.2.2
   (plus transitive deps: numpy, httpx, pydantic, anyio, etc.)
 
-### com0com
-- Not installed yet (needed for virtual serial ports on Windows)
-- Checked via winget - not available in package managers
-- Must be downloaded manually from https://com0com.sourceforge.net/
+### TCP Socket instead of Virtual Serial Port
+- Originally planned to use com0com for virtual serial ports
+- com0com had driver issues ("Error" status) on this system
+- Switched to TCP sockets (localhost:9999) - no driver needed, works cross-platform
+- Removed pyserial from requirements.txt
 
 ### Project Structure Created
 - Created directories: controller/, mock_printer/, sample_images/, config/, config/prompts/, docs/
