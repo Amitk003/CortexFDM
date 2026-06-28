@@ -54,6 +54,19 @@
   - Returns structured dict with defect_type, action_required, optional params
   - Error handling for missing API key, file not found, API failures
 - Tested module structure: system prompt (799 chars), tool schema, telemetry formatting all working
+### Phase 3a: G-code Translator + Safety (feat/gcode-translator branch)
+- Written controller/gcode_translator.py
+  - translate(diagnosis) - converts AI diagnosis dict to G-code command list
+  - Spaghetti (emergency_stop) -> M104 S0, M140 S0, G91, G1 Z10, G28 X Y, M84
+  - Under-extrusion (adjust_temp) -> M104 S{temp}
+  - Layer shift (reduce_speed) -> M220 S{speed}
+  - Nominal -> no commands
+  - Validates defect_type and action_required
+- Written controller/safety.py
+  - clamp_temperature() - enforces 150-250C range
+  - clamp_speed() - enforces 10-200% range
+  - SafetyError raised for out-of-range values
+- Tested: all 4 scenarios, error cases, and safety clamps verified
 
 ### Phase 2a: Mock Camera (feat/mock-camera branch)
 - Written controller/camera.py
