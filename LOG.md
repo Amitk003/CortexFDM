@@ -44,6 +44,15 @@
 - docs/setup.md - step-by-step setup guide
 - docs/usage.md - how to run the system
 
+### Phase 3b: Closed-Loop Main Controller (feat/closed-loop branch)
+- Written controller/main.py
+  - Full closed-loop orchestration: Camera -> Cerebras -> Translator -> Printer
+  - Initializes all components with proper error handling
+  - Loop: capture image, query telemetry, AI diagnosis, translate to G-code, send to printer
+  - Graceful shutdown on Ctrl+C
+  - All error cases handled with clear console messages
+- Verified: camera loads images, connects to mock printer, Cerebras client init reports missing key correctly
+- Ready to test with real API once .env is configured
 ### Phase 2b: Cerebras Client (feat/cerebras-client branch)
 - Written controller/cerebras_client.py
   - CerebrasClient class loads API key from .env or constructor param
