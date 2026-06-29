@@ -49,7 +49,7 @@ class MockCamera:
             return None
         return self.image_list[self.current_index]
 
-    def get_next_frame(self, raw=False):
+    def get_next_frame(self):
         if not self.image_list:
             raise MockCameraError("No images available")
 
@@ -69,19 +69,7 @@ class MockCamera:
             raise MockCameraError("Failed to encode image as JPEG")
 
         b64_string = base64.b64encode(buffer).decode("utf-8")
-        data_uri = f"data:image/jpeg;base64,{b64_string}"
-
-        if raw:
-            return {
-                "filename": filename,
-                "base64": b64_string,
-                "data_uri": data_uri,
-                "width": IMAGE_WIDTH,
-                "height": IMAGE_HEIGHT,
-                "size_bytes": len(buffer),
-            }
-
-        return data_uri
+        return f"data:image/jpeg;base64,{b64_string}"
 
     def reset(self):
         self.current_index = 0

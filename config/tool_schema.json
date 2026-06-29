@@ -3,6 +3,7 @@
   "function": {
     "name": "execute_remediation",
     "description": "Adjusts physical printer parameters dynamically based on visual defect detection and geometric analysis.",
+    "strict": true,
     "parameters": {
       "type": "object",
       "properties": {

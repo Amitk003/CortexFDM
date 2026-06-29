@@ -29,3 +29,5 @@ CortexFDM/
 5. Run controller: `python -m controller.main`
 
 See `docs/setup.md` for detailed setup instructions.
+
+lol, didn't saw the time region and started working on the project at 10:00 AM "IST"

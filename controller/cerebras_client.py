@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from config.settings import (
     CEREBRAS_MODEL,
     CEREBRAS_TEMPERATURE,
-    CEREBRAS_STRICT_MODE,
     CEREBRAS_REASONING_EFFORT,
     CEREBRAS_MAX_TOKENS,
 )
@@ -79,8 +78,6 @@ class CerebrasClient:
             "tools": self.tools,
             "max_tokens": CEREBRAS_MAX_TOKENS,
         }
-        if CEREBRAS_STRICT_MODE:
-            kwargs["strict"] = True
 
         reasoning = CEREBRAS_REASONING_EFFORT
         if reasoning:
