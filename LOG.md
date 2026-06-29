@@ -99,6 +99,11 @@
 - controller/main.py: Made sys.path.insert more robust with duplicate check
 - config/system_prompt.txt: Added telemetry context info for the AI
 - config/prompts/: Removed empty directory
+- Fixed merged duplicate code in main.py (SyntaxError at line 146)
+- Camera: Changed from squish resize to center-crop to preserve image content (no black bars)
+- Camera: Increased JPEG quality from 80 to 95
+- System prompt: Rewrote to be more specific about defect appearance
+- Cerebras client: Switched from tool calling to response_format json_object for more reliable structured output
 
 ### Phase 2a: Mock Camera (feat/mock-camera branch)
 - Written controller/camera.py

@@ -26,7 +26,8 @@
           "description": "If layer_shift is detected, reduce the kinematic speed to 70% to stabilize the motors."
         }
       },
-      "required": ["defect_type", "action_required"]
+      "required": ["defect_type", "action_required"],
+      "additionalProperties": false
     }
   }
 }

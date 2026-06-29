@@ -5,19 +5,12 @@ from pathlib import Path
 from cerebras.cloud.sdk import Cerebras
 from dotenv import load_dotenv
 
-from config.settings import (
-    CEREBRAS_MODEL,
-    CEREBRAS_TEMPERATURE,
-    CEREBRAS_REASONING_EFFORT,
-    CEREBRAS_MAX_TOKENS,
-)
+from config.settings import CEREBRAS_MODEL, CEREBRAS_TEMPERATURE, CEREBRAS_MAX_TOKENS
 
 
 load_dotenv()
 
-
 SYSTEM_PROMPT_PATH = Path(__file__).resolve().parent.parent / "config" / "system_prompt.txt"
-TOOL_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "config" / "tool_schema.json"
 
 
 class CerebrasClientError(Exception):
@@ -33,7 +26,6 @@ class CerebrasClient:
             )
         self.client = Cerebras(api_key=api_key)
         self.system_prompt = self._load_system_prompt()
-        self.tools = self._load_tools()
 
     @staticmethod
     def _load_system_prompt():
@@ -41,16 +33,6 @@ class CerebrasClient:
             return SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
         except FileNotFoundError:
             raise CerebrasClientError(f"System prompt file not found: {SYSTEM_PROMPT_PATH}")
-
-    @staticmethod
-    def _load_tools():
-        try:
-            schema = json.loads(TOOL_SCHEMA_PATH.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            raise CerebrasClientError(f"Tool schema file not found: {TOOL_SCHEMA_PATH}")
-        except json.JSONDecodeError as e:
-            raise CerebrasClientError(f"Invalid tool schema JSON: {e}")
-        return [schema]
 
     def diagnose(self, image_base64, telemetry=None):
         telemetry_text = self._format_telemetry(telemetry)
@@ -61,7 +43,7 @@ class CerebrasClient:
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Current printer telemetry:\n{telemetry_text}",
+                        "text": f"Telemetry: extruder {telemetry.get('extruder_actual', '?')}C, bed {telemetry.get('bed_actual', '?')}C. Describe the print quality.",
                     },
                     {
                         "type": "image_url",
@@ -75,44 +57,51 @@ class CerebrasClient:
             "model": CEREBRAS_MODEL,
             "messages": messages,
             "temperature": CEREBRAS_TEMPERATURE,
-            "tools": self.tools,
             "max_tokens": CEREBRAS_MAX_TOKENS,
         }
-
-        reasoning = CEREBRAS_REASONING_EFFORT
-        if reasoning:
-            kwargs["reasoning_effort"] = reasoning
 
         try:
             response = self.client.chat.completions.create(**kwargs)
         except Exception as e:
             raise CerebrasClientError(f"API call failed: {e}")
 
-        choice = response.choices[0]
-        message = choice.message
-
-        if not message.tool_calls:
-            return {
-                "defect_type": "nominal",
-                "action_required": "none",
-                "raw_response": message.content or "",
-            }
-
-        tool_call = message.tool_calls[0]
-        try:
-            arguments = json.loads(tool_call.function.arguments)
-        except (json.JSONDecodeError, IndexError, AttributeError) as e:
-            raise CerebrasClientError(f"Failed to parse tool call response: {e}")
+        content = response.choices[0].message.content or ""
+        text_lower = content.lower()
 
         result = {
-            "defect_type": arguments.get("defect_type", "nominal"),
-            "action_required": arguments.get("action_required", "none"),
+            "defect_type": "nominal",
+            "action_required": "none",
+            "raw_response": content,
         }
 
-        if "target_temperature_celsius" in arguments:
-            result["target_temperature_celsius"] = arguments["target_temperature_celsius"]
-        if "speed_percentage" in arguments:
-            result["speed_percentage"] = arguments["speed_percentage"]
+        has_catastrophic = "catastrophic" in text_lower
+        has_spaghetti = "spaghetti" in text_lower
+        has_tangled = "tangled" in text_lower
+        has_failure = "failure" in text_lower or "failed" in text_lower
+        has_layer_shift = "layer shift" in text_lower or "layer_shift" in text_lower
+        has_z_wobble = "z-wobble" in text_lower or "z wobble" in text_lower
+        has_stair_step = "stair-step" in text_lower or "stair step" in text_lower
+        has_under_extrusion = "under-extrusion" in text_lower or "under_extrusion" in text_lower or "under extrusion" in text_lower
+        has_gaps = "gap" in text_lower
+        has_over_extrusion = "over-extrusion" in text_lower or "over_extrusion" in text_lower
+        has_blobbing = "blobbing" in text_lower or "blob" in text_lower
+
+        has_critical_term = has_catastrophic or "severe" in text_lower or "total" in text_lower
+
+        if has_spaghetti or has_tangled or (has_failure and not has_gaps and not has_under_extrusion):
+            result["defect_type"] = "spaghetti"
+            result["action_required"] = "emergency_stop"
+        elif has_layer_shift or has_z_wobble or has_stair_step:
+            result["defect_type"] = "layer_shift"
+            result["action_required"] = "reduce_speed"
+            result["speed_percentage"] = 70
+        elif has_under_extrusion or has_gaps:
+            result["defect_type"] = "under_extrusion"
+            result["action_required"] = "adjust_temp"
+            if telemetry and telemetry.get("extruder_actual"):
+                result["target_temperature_celsius"] = min(telemetry["extruder_actual"] + 10, 250)
+            else:
+                result["target_temperature_celsius"] = 215
 
         return result
 
