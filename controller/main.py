@@ -89,6 +89,9 @@ def run():
                     defect = diagnosis.get("defect_type", "unknown")
                     action = diagnosis.get("action_required", "unknown")
                     dashboard.add_log(f"Diagnosis: {defect} -> {action}")
+                    raw = diagnosis.get("raw_response", "")
+                    if raw:
+                        dashboard.add_log(f"Raw: {raw[:150]}")
                 except CerebrasClientError as e:
                     dashboard.add_log(f"AI error: {e}")
                     live.update(dashboard.render())
