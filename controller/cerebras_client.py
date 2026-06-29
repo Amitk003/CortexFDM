@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from config.settings import (
     CEREBRAS_MODEL,
     CEREBRAS_TEMPERATURE,
-    CEREBRAS_REASONING_EFFORT,
     CEREBRAS_MAX_TOKENS,
 )
 
@@ -17,7 +16,6 @@ load_dotenv()
 
 
 SYSTEM_PROMPT_PATH = Path(__file__).resolve().parent.parent / "config" / "system_prompt.txt"
-TOOL_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "config" / "tool_schema.json"
 
 
 class CerebrasClientError(Exception):
@@ -33,7 +31,6 @@ class CerebrasClient:
             )
         self.client = Cerebras(api_key=api_key)
         self.system_prompt = self._load_system_prompt()
-        self.tools = self._load_tools()
 
     @staticmethod
     def _load_system_prompt():
@@ -42,20 +39,8 @@ class CerebrasClient:
         except FileNotFoundError:
             raise CerebrasClientError(f"System prompt file not found: {SYSTEM_PROMPT_PATH}")
 
-    @staticmethod
-    def _load_tools():
-        try:
-            schema = json.loads(TOOL_SCHEMA_PATH.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            raise CerebrasClientError(f"Tool schema file not found: {TOOL_SCHEMA_PATH}")
-        except json.JSONDecodeError as e:
-            raise CerebrasClientError(f"Invalid tool schema JSON: {e}")
-        return [schema]
-
     def diagnose(self, image_base64, telemetry=None):
         telemetry_text = self._format_telemetry(telemetry)
-        json_schema_text = self._load_tools_text()
-
         messages = [
             {"role": "system", "content": self.system_prompt},
             {
@@ -63,7 +48,7 @@ class CerebrasClient:
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Current printer telemetry:\n{telemetry_text}\n\nRespond with a JSON object matching this schema:\n{json_schema_text}",
+                        "text": f"Current telemetry:\n{telemetry_text}\n\nWhat defect do you see in this 3D print?",
                     },
                     {
                         "type": "image_url",
@@ -78,12 +63,7 @@ class CerebrasClient:
             "messages": messages,
             "temperature": CEREBRAS_TEMPERATURE,
             "max_tokens": CEREBRAS_MAX_TOKENS,
-            "response_format": {"type": "json_object"},
         }
-
-        reasoning = CEREBRAS_REASONING_EFFORT
-        if reasoning:
-            kwargs["reasoning_effort"] = reasoning
 
         try:
             response = self.client.chat.completions.create(**kwargs)
@@ -93,10 +73,17 @@ class CerebrasClient:
         choice = response.choices[0]
         content = choice.message.content or ""
 
+        print(f"\n[MODEL RAW RESPONSE]\n{content}\n")
+
         try:
             parsed = json.loads(content)
         except json.JSONDecodeError:
-            raise CerebrasClientError(f"Failed to parse model response as JSON: {content[:200]}")
+            try:
+                start = content.index("{")
+                end = content.rindex("}") + 1
+                parsed = json.loads(content[start:end])
+            except (ValueError, json.JSONDecodeError):
+                raise CerebrasClientError(f"Failed to parse response as JSON: {content[:300]}")
 
         result = {
             "defect_type": parsed.get("defect_type", "nominal"),
@@ -110,14 +97,6 @@ class CerebrasClient:
             result["speed_percentage"] = parsed["speed_percentage"]
 
         return result
-
-    @staticmethod
-    def _load_tools_text():
-        try:
-            schema = json.loads(TOOL_SCHEMA_PATH.read_text(encoding="utf-8"))
-            return json.dumps(schema["function"]["parameters"], indent=2)
-        except (FileNotFoundError, KeyError, json.JSONDecodeError):
-            return ""
 
     @staticmethod
     def _format_telemetry(telemetry):
