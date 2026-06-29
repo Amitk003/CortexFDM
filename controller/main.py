@@ -1,10 +1,15 @@
+import json
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+
+LOG_FILE = Path(__file__).resolve().parent / "run.log"
+LOG_FILE.write_text("", encoding="utf-8")
 
 from rich.live import Live
 
@@ -14,6 +19,11 @@ from controller.cerebras_client import CerebrasClient, CerebrasClientError
 from controller.gcode_translator import translate, TranslationError
 from controller.ui import Dashboard
 from config.settings import SAMPLING_INTERVAL_SECONDS
+
+
+def log_write(text):
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {text}\n")
 
 
 def run():
@@ -91,6 +101,7 @@ def run():
                     dashboard.add_log(f"Diagnosis: {defect} -> {action}")
                     raw = diagnosis.get("raw_response", "")
                     if raw:
+                        log_write(f"[IMAGE: {dashboard.current_image}] RAW: {raw}")
                         dashboard.add_log(f"Raw: {raw[:150]}")
                 except CerebrasClientError as e:
                     dashboard.add_log(f"AI error: {e}")
