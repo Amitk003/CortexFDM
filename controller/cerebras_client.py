@@ -54,6 +54,8 @@ class CerebrasClient:
 
     def diagnose(self, image_base64, telemetry=None):
         telemetry_text = self._format_telemetry(telemetry)
+        json_schema_text = self._load_tools_text()
+
         messages = [
             {"role": "system", "content": self.system_prompt},
             {
@@ -61,7 +63,7 @@ class CerebrasClient:
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Current printer telemetry:\n{telemetry_text}",
+                        "text": f"Current printer telemetry:\n{telemetry_text}\n\nRespond with a JSON object matching this schema:\n{json_schema_text}",
                     },
                     {
                         "type": "image_url",
@@ -75,8 +77,8 @@ class CerebrasClient:
             "model": CEREBRAS_MODEL,
             "messages": messages,
             "temperature": CEREBRAS_TEMPERATURE,
-            "tools": self.tools,
             "max_tokens": CEREBRAS_MAX_TOKENS,
+            "response_format": {"type": "json_object"},
         }
 
         reasoning = CEREBRAS_REASONING_EFFORT
@@ -89,32 +91,33 @@ class CerebrasClient:
             raise CerebrasClientError(f"API call failed: {e}")
 
         choice = response.choices[0]
-        message = choice.message
+        content = choice.message.content or ""
 
-        if not message.tool_calls:
-            return {
-                "defect_type": "nominal",
-                "action_required": "none",
-                "raw_response": message.content or "",
-            }
-
-        tool_call = message.tool_calls[0]
         try:
-            arguments = json.loads(tool_call.function.arguments)
-        except (json.JSONDecodeError, IndexError, AttributeError) as e:
-            raise CerebrasClientError(f"Failed to parse tool call response: {e}")
+            parsed = json.loads(content)
+        except json.JSONDecodeError:
+            raise CerebrasClientError(f"Failed to parse model response as JSON: {content[:200]}")
 
         result = {
-            "defect_type": arguments.get("defect_type", "nominal"),
-            "action_required": arguments.get("action_required", "none"),
+            "defect_type": parsed.get("defect_type", "nominal"),
+            "action_required": parsed.get("action_required", "none"),
+            "raw_response": content,
         }
 
-        if "target_temperature_celsius" in arguments:
-            result["target_temperature_celsius"] = arguments["target_temperature_celsius"]
-        if "speed_percentage" in arguments:
-            result["speed_percentage"] = arguments["speed_percentage"]
+        if "target_temperature_celsius" in parsed:
+            result["target_temperature_celsius"] = parsed["target_temperature_celsius"]
+        if "speed_percentage" in parsed:
+            result["speed_percentage"] = parsed["speed_percentage"]
 
         return result
+
+    @staticmethod
+    def _load_tools_text():
+        try:
+            schema = json.loads(TOOL_SCHEMA_PATH.read_text(encoding="utf-8"))
+            return json.dumps(schema["function"]["parameters"], indent=2)
+        except (FileNotFoundError, KeyError, json.JSONDecodeError):
+            return ""
 
     @staticmethod
     def _format_telemetry(telemetry):
