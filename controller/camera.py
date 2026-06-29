@@ -61,8 +61,21 @@ class MockCamera:
         if frame is None:
             raise MockCameraError(f"Could not read image: {filepath}")
 
-        frame_resized = cv2.resize(frame, (IMAGE_WIDTH, IMAGE_HEIGHT))
-        success, buffer = cv2.imencode(".jpg", frame_resized, [
+        h, w = frame.shape[:2]
+        scale = min(IMAGE_WIDTH / w, IMAGE_HEIGHT / h)
+        new_w = int(w * scale)
+        new_h = int(h * scale)
+        resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
+        canvas = cv2.copyMakeBorder(
+            resized,
+            top=(IMAGE_HEIGHT - new_h) // 2,
+            bottom=(IMAGE_HEIGHT - new_h + 1) // 2,
+            left=(IMAGE_WIDTH - new_w) // 2,
+            right=(IMAGE_WIDTH - new_w + 1) // 2,
+            borderType=cv2.BORDER_CONSTANT,
+            value=[0, 0, 0],
+        )
+        success, buffer = cv2.imencode(".jpg", canvas, [
             cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY
         ])
         if not success:
